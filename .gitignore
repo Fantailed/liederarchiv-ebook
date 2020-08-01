@@ -3,3 +3,5 @@ target/
 venv*/
 *.iml
 /**/__pycache__/
+
+score_images/
