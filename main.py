@@ -107,13 +107,14 @@ if __name__ == '__main__':
     contents = OrderedDict()
 
     for char in "a":         # letters:
-        print(f"Fetching songs starting with {char.upper()}...")
+        print(f"Processing songs starting with {char.upper()}...")
 
         songs = get_song_list(get_list_url(char))
         per_letter_contents = []
 
-        for _song_url in ["https://www.lieder-archiv.de/alphabet_song-notenblatt_100505.html"]:     # songs:
+        for _song_url in songs:
             song = Song(_song_url)
+            print(f"Current song: {song.title}")
 
             # Prepare image file
             image = Image.open(song.score_img)
@@ -133,9 +134,10 @@ if __name__ == '__main__':
     section_tuple = []
 
     for k, v in contents.items():
-        book.add_item(v[0])
-        spine_list.append(v[0])
-        section_tuple.append((epub.Section(k), v[0]))
+        for item in v:
+            book.add_item(item)
+            spine_list.append(item)
+        section_tuple.append((epub.Section(k), v))
 
     book.toc = section_tuple
     book.spine = spine_list
