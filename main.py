@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
+from collections import OrderedDict
 from ebooklib import epub
 from pathlib import Path
+from string import ascii_lowercase as letters
 import requests
 
 
@@ -40,15 +42,48 @@ def save_score_image(song_url):
     folder = Path('./score_images')
     folder.mkdir(parents=True, exist_ok=True)
     out_path = folder / image_url.split('/')[-1]
-    response = requests.get(image_url)
 
-    with open(out_path, 'wb') as file:
-        file.write(response.content)
+    if not out_path.is_file():
+        response = requests.get(image_url)
+
+        with open(out_path, 'wb') as file:
+            file.write(response.content)
 
     return out_path
 
 
+class Song:
+    def __init__(self, title, score_img, text):
+        self.title = title
+        self.score_img = score_img
+        self.text = text
+
+    def __str__(self):
+        return f"==== SONG ====" \
+               f"Title: {self.title}" \
+               f"Sheet Music: {self.score_img}" \
+               f"Text: {self.text}"
+
+
 if __name__ == '__main__':
-    a_songs = get_song_list(get_list_url('a'))
-    katze = a_songs[3]
-    print(get_song_text(katze))
+    book = epub.EpubBook()
+
+    # Set metadata
+    book.set_identifier('liederarchiv-liederbuch')
+    book.set_title('Lieder Archiv - Liederbuch')
+    book.set_language('de')
+
+    contents = OrderedDict()
+
+    for char in "a":         # letters:
+        songs = get_song_list(get_list_url(char))
+        per_letter_contents = []
+        for song_url in songs:
+            _title = get_song_title(song_url)
+            _score_img = save_score_image(song_url)
+            _text = get_song_text(song_url)
+
+            per_letter_contents.append(Song(_title, _score_img, _text))
+        contents[char.upper()] = per_letter_contents
+
+    print(contents)
