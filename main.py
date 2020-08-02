@@ -103,29 +103,35 @@ if __name__ == '__main__':
     book.add_metadata('DC', 'description', 'Alle Lieder von www.lieder-archiv.de in einem Buch!')
     book.add_metadata(None, 'copyright', 'Copyright © 1996-2020 Alojado Publishing')
 
+    # Add cover image
+    book.set_cover("cover.png", open('cover.png', 'rb').read())
+
     contents = {}
 
-    for char in "a":         # letters:
+    for char in letters:
         print(f"Processing songs starting with {char.upper()}...")
 
         songs = get_song_list(get_list_url(char))
         per_letter_contents = []
 
         for _song_url in songs:
-            song = Song(_song_url)
-            print(f"Current song: {song.title}")
+            try:
+                song = Song(_song_url)
+                print(f"Current song: {song.title}")
 
-            # Prepare image file
-            image = Image.open(song.score_img)
-            b = io.BytesIO()
-            image.save(b, 'png')
-            b_image = b.getvalue()
-            book.add_item(epub.EpubItem(uid=song.id, file_name=str(song.score_img), media_type='image/png', content=b_image))
+                # Prepare image file
+                image = Image.open(song.score_img)
+                b = io.BytesIO()
+                image.save(b, 'png')
+                b_image = b.getvalue()
+                book.add_item(epub.EpubItem(uid=song.id, file_name=str(song.score_img), media_type='image/png', content=b_image))
 
-            chapter = epub.EpubHtml(title=song.title, file_name=song.filename, lang='de')
-            chapter.content = song.html
+                chapter = epub.EpubHtml(title=song.title, file_name=song.filename, lang='de')
+                chapter.content = song.html
 
-            per_letter_contents.append(chapter)
+                per_letter_contents.append(chapter)
+            except Exception:
+                continue
 
         contents[char.upper()] = per_letter_contents
 
