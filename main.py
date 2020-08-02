@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from collections import OrderedDict
 from ebooklib import epub
 from pathlib import Path
 from PIL import Image
@@ -14,7 +13,7 @@ def get_list_url(letter):
 
 def _get_song_list(list_soup):
     ul = list_soup.find('ul', class_='list')
-    links = [a['href'] for a in ul.find_all('a', href=True)]
+    links = list(dict.fromkeys([a['href'] for a in ul.find_all('a', href=True)]))
     return links
 
 
@@ -104,7 +103,7 @@ if __name__ == '__main__':
     book.add_metadata('DC', 'description', 'Alle Lieder von www.lieder-archiv.de in einem Buch!')
     book.add_metadata(None, 'copyright', 'Copyright © 1996-2020 Alojado Publishing')
 
-    contents = OrderedDict()
+    contents = {}
 
     for char in "a":         # letters:
         print(f"Processing songs starting with {char.upper()}...")
@@ -141,7 +140,7 @@ if __name__ == '__main__':
 
     book.toc = section_tuple
     book.spine = spine_list
-    # book.add_item(epub.EpubNcx())
-    # book.add_item(epub.EpubNav())
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
 
     epub.write_epub('Liederbuch.epub', book)
